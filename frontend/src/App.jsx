@@ -24,7 +24,12 @@ function App() {
       const data = await sendMessage(text);
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: data.response },
+        {
+          role: 'assistant',
+          content: data.response,
+          sourceData: data.source_data,
+          intent: data.intent,
+        },
       ]);
     } catch {
       setMessages((prev) => [

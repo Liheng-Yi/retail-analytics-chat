@@ -11,7 +11,13 @@ function ChatWindow({ messages, loading }) {
   return (
     <div className="chat-window">
       {messages.map((msg, i) => (
-        <MessageBubble key={i} role={msg.role} content={msg.content} />
+        <MessageBubble
+          key={i}
+          role={msg.role}
+          content={msg.content}
+          sourceData={msg.sourceData}
+          intent={msg.intent}
+        />
       ))}
       {loading && (
         <div className="message assistant">

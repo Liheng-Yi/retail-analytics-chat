@@ -5,6 +5,11 @@ from app.extensions import db
 from app.models import Transaction
 
 
+def _fmt(val):
+    """Format a dollar amount."""
+    return f"${val:,.2f}"
+
+
 def get_customer_transactions(customer_id: str, limit: int = 20) -> str:
     """Get recent transactions for a customer, formatted as a string for the LLM."""
     rows = (
@@ -35,184 +40,256 @@ def get_customer_transactions(customer_id: str, limit: int = 20) -> str:
 
 
 def get_product_info(product_id: str) -> str:
-    """Get aggregated info about a product ID."""
+    """Get aggregated info about a product ID with calculation breakdowns."""
     rows = Transaction.query.filter_by(product_id=product_id).all()
 
     if not rows:
         return f"No transactions found for product {product_id}."
 
-    total_qty = sum(r.quantity for r in rows)
-    total_revenue = sum(r.total_amount for r in rows)
-    avg_price = sum(r.price for r in rows) / len(rows)
-    avg_discount = sum(r.discount_applied for r in rows) / len(rows)
+    n = len(rows)
+    prices = [r.price for r in rows]
+    amounts = [r.total_amount for r in rows]
+    quantities = [r.quantity for r in rows]
+    discounts = [r.discount_applied for r in rows]
     stores = sorted(set(r.store_location for r in rows))
     categories = sorted(set(r.product_category for r in rows))
+
+    total_qty = sum(quantities)
+    total_revenue = sum(amounts)
+    sum_prices = sum(prices)
+    avg_price = sum_prices / n
+    sum_discounts = sum(discounts)
+    avg_discount = sum_discounts / n
+
     payment_methods = {}
     for r in rows:
         payment_methods[r.payment_method] = payment_methods.get(r.payment_method, 0) + 1
 
     lines = [
-        f"Product {product_id} summary ({len(rows)} transactions):",
-        f"- Categories: {', '.join(categories)}",
-        f"- Total quantity sold: {total_qty}",
-        f"- Total revenue: ${total_revenue:.2f}",
-        f"- Average price: ${avg_price:.2f}",
-        f"- Average discount: {avg_discount:.1f}%",
-        f"- Payment methods: {json.dumps(payment_methods)}",
-        f"- Sold in {len(stores)} store location(s)",
+        f"Product {product_id} — {n} transactions",
+        f"═══════════════════════════════════════",
+        f"",
+        f"Categories: {', '.join(categories)}",
+        f"",
+        f"[Calculation Breakdown]",
+        f"",
+        f"Total Qty Sold = sum of all quantities",
     ]
 
-    # Show first 10 stores
-    for s in stores[:10]:
-        lines.append(f"  • {s}")
-    if len(stores) > 10:
-        lines.append(f"  ... and {len(stores) - 10} more")
+    # Show sample quantities for breakdown (up to 8 values)
+    if n <= 8:
+        qty_str = " + ".join(str(q) for q in quantities)
+        lines.append(f"  = {qty_str}")
+    else:
+        sample = quantities[:5]
+        qty_str = " + ".join(str(q) for q in sample)
+        lines.append(f"  = {qty_str} + ... ({n - 5} more values)")
+    lines.append(f"  = {total_qty}")
+
+    lines.append(f"")
+    lines.append(f"Total Revenue = sum of all transaction amounts")
+    if n <= 8:
+        amt_str = " + ".join(f"${a:.2f}" for a in amounts)
+        lines.append(f"  = {amt_str}")
+    else:
+        sample = amounts[:5]
+        amt_str = " + ".join(f"${a:.2f}" for a in sample)
+        lines.append(f"  = {amt_str} + ... ({n - 5} more)")
+    lines.append(f"  = {_fmt(total_revenue)}")
+
+    lines.append(f"")
+    lines.append(f"Avg Price = sum(all prices) / count(transactions)")
+    lines.append(f"  = {_fmt(sum_prices)} / {n}")
+    lines.append(f"  = {_fmt(avg_price)}")
+
+    lines.append(f"")
+    lines.append(f"Avg Discount = sum(all discounts) / count(transactions)")
+    lines.append(f"  = {sum_discounts:.2f} / {n}")
+    lines.append(f"  = {avg_discount:.1f}%")
+
+    lines.append(f"")
+    lines.append(f"Payment Methods: {json.dumps(payment_methods)}")
+    lines.append(f"Store Locations: {len(stores)}")
 
     return "\n".join(lines)
 
 
 def get_business_metrics() -> str:
-    """Get general business metrics."""
+    """Get general business metrics with calculation breakdowns."""
     rows = Transaction.query.all()
 
     if not rows:
         return "No transaction data available."
 
-    total_revenue = sum(r.total_amount for r in rows)
-    total_transactions = len(rows)
-    avg_transaction = total_revenue / total_transactions
+    n = len(rows)
+    amounts = [r.total_amount for r in rows]
+    total_revenue = sum(amounts)
+    avg_transaction = total_revenue / n
 
-    # Revenue by category
     by_category = {}
+    cat_counts = {}
     for r in rows:
         cat = r.product_category
         by_category[cat] = by_category.get(cat, 0) + r.total_amount
+        cat_counts[cat] = cat_counts.get(cat, 0) + 1
 
-    # Revenue by payment method
     by_payment = {}
     for r in rows:
         pm = r.payment_method
         by_payment[pm] = by_payment.get(pm, 0) + r.total_amount
 
-    # Unique counts
     unique_customers = len(set(r.customer_id for r in rows))
     unique_products = len(set(r.product_id for r in rows))
 
     lines = [
-        f"Business Metrics Overview ({total_transactions} total transactions):",
-        f"- Total revenue: ${total_revenue:,.2f}",
-        f"- Average transaction value: ${avg_transaction:.2f}",
-        f"- Unique customers: {unique_customers}",
-        f"- Unique product IDs: {unique_products}",
-        "\nRevenue by category:",
+        f"Business Metrics — {n} transactions",
+        f"═══════════════════════════════════════",
+        f"",
+        f"[Calculation Breakdown]",
+        f"",
+        f"Total Revenue = sum(TotalAmount for all {n} rows)",
+        f"  = {_fmt(total_revenue)}",
+        f"",
+        f"Avg Transaction Value = Total Revenue / Transaction Count",
+        f"  = {_fmt(total_revenue)} / {n}",
+        f"  = {_fmt(avg_transaction)}",
+        f"",
+        f"Unique Customers = count(distinct CustomerID) = {unique_customers}",
+        f"Unique Products = count(distinct ProductID) = {unique_products}",
+        f"",
+        f"Revenue by Category:",
+        f"  (each = sum of TotalAmount WHERE ProductCategory = X)",
     ]
     for cat, rev in sorted(by_category.items(), key=lambda x: -x[1]):
-        lines.append(f"  • {cat}: ${rev:,.2f}")
+        cnt = cat_counts[cat]
+        lines.append(f"  • {cat}: {_fmt(rev)}  ({cnt} transactions, avg {_fmt(rev/cnt)})")
 
-    lines.append("\nRevenue by payment method:")
+    lines.append(f"\nRevenue by Payment Method:")
     for pm, rev in sorted(by_payment.items(), key=lambda x: -x[1]):
-        lines.append(f"  • {pm}: ${rev:,.2f}")
+        lines.append(f"  • {pm}: {_fmt(rev)}")
 
     return "\n".join(lines)
 
 
 def compare_customers(id1: str, id2: str) -> str:
-    """Compare two customers side by side."""
+    """Compare two customers with calculation breakdowns."""
     def _stats(cid):
         rows = Transaction.query.filter_by(customer_id=cid).all()
         if not rows:
-            return None
-        total_spend = sum(r.total_amount for r in rows)
-        avg_spend = total_spend / len(rows)
+            return None, []
+        return rows, rows
+
+    rows1, _ = _stats(id1)
+    rows2, _ = _stats(id2)
+
+    if not rows1 and not rows2:
+        return f"No transactions found for either customer {id1} or customer {id2}."
+    if not rows1:
+        return f"No transactions found for customer {id1}. Customer {id2} has data."
+    if not rows2:
+        return f"Customer {id1} has data. No transactions found for customer {id2}."
+
+    def _breakdown(cid, rows):
+        amounts = [r.total_amount for r in rows]
+        n = len(rows)
+        total = sum(amounts)
+        avg = total / n
         categories = {}
         for r in rows:
             categories[r.product_category] = categories.get(r.product_category, 0) + r.total_amount
         payment_methods = {}
         for r in rows:
             payment_methods[r.payment_method] = payment_methods.get(r.payment_method, 0) + 1
-        return {
-            "transactions": len(rows),
-            "total_spend": total_spend,
-            "avg_spend": avg_spend,
-            "categories": categories,
-            "payment_methods": payment_methods,
-        }
 
-    s1 = _stats(id1)
-    s2 = _stats(id2)
+        lines = [
+            f"  Customer {cid}: {n} transaction(s)",
+            f"  Total Spend = sum(TotalAmount)",
+        ]
+        if n <= 8:
+            amt_str = " + ".join(f"${a:.2f}" for a in amounts)
+            lines.append(f"    = {amt_str}")
+        else:
+            sample = amounts[:5]
+            amt_str = " + ".join(f"${a:.2f}" for a in sample)
+            lines.append(f"    = {amt_str} + ... ({n - 5} more)")
+        lines.append(f"    = {_fmt(total)}")
 
-    if not s1 and not s2:
-        return f"No transactions found for either customer {id1} or customer {id2}."
-    if not s1:
-        return f"No transactions found for customer {id1}. Customer {id2} has data."
-    if not s2:
-        return f"Customer {id1} has data. No transactions found for customer {id2}."
+        lines.append(f"  Avg per Transaction = {_fmt(total)} / {n} = {_fmt(avg)}")
+
+        lines.append(f"  Categories:")
+        for cat, val in sorted(categories.items()):
+            lines.append(f"    • {cat}: {_fmt(val)}")
+
+        lines.append(f"  Payment Methods:")
+        for pm, cnt in sorted(payment_methods.items()):
+            lines.append(f"    • {pm}: {cnt}x")
+
+        return "\n".join(lines)
 
     lines = [
-        f"Comparison: Customer {id1} vs Customer {id2}\n",
-        f"{'Metric':<25} {'Customer ' + id1:<20} {'Customer ' + id2:<20}",
-        f"{'-'*65}",
-        f"{'Transactions':<25} {s1['transactions']:<20} {s2['transactions']:<20}",
-        f"{'Total Spend':<25} ${s1['total_spend']:<19.2f} ${s2['total_spend']:<19.2f}",
-        f"{'Avg per Transaction':<25} ${s1['avg_spend']:<19.2f} ${s2['avg_spend']:<19.2f}",
-        f"\nSpending by category:",
+        f"Comparison: Customer {id1} vs Customer {id2}",
+        f"═══════════════════════════════════════",
+        f"",
+        f"[Calculation Breakdown]",
+        f"",
+        _breakdown(id1, rows1),
+        f"",
+        _breakdown(id2, rows2),
     ]
-    all_cats = sorted(set(list(s1["categories"]) + list(s2["categories"])))
-    for cat in all_cats:
-        v1 = s1["categories"].get(cat, 0)
-        v2 = s2["categories"].get(cat, 0)
-        lines.append(f"  {cat:<23} ${v1:<19.2f} ${v2:<19.2f}")
-
-    lines.append(f"\nPayment methods:")
-    all_pm = sorted(set(list(s1["payment_methods"]) + list(s2["payment_methods"])))
-    for pm in all_pm:
-        v1 = s1["payment_methods"].get(pm, 0)
-        v2 = s2["payment_methods"].get(pm, 0)
-        lines.append(f"  {pm:<23} {v1:<20} {v2:<20}")
 
     return "\n".join(lines)
 
 
 def compare_products(id1: str, id2: str) -> str:
-    """Compare two products side by side."""
-    def _stats(pid):
+    """Compare two products with calculation breakdowns."""
+    def _load(pid):
         rows = Transaction.query.filter_by(product_id=pid).all()
-        if not rows:
-            return None
-        total_qty = sum(r.quantity for r in rows)
-        total_rev = sum(r.total_amount for r in rows)
-        avg_price = sum(r.price for r in rows) / len(rows)
-        avg_disc = sum(r.discount_applied for r in rows) / len(rows)
-        stores = len(set(r.store_location for r in rows))
-        return {
-            "transactions": len(rows),
-            "total_qty": total_qty,
-            "total_revenue": total_rev,
-            "avg_price": avg_price,
-            "avg_discount": avg_disc,
-            "store_count": stores,
-        }
+        return rows if rows else None
 
-    s1 = _stats(id1)
-    s2 = _stats(id2)
+    rows1 = _load(id1)
+    rows2 = _load(id2)
 
-    if not s1 and not s2:
+    if not rows1 and not rows2:
         return f"No transactions found for either product {id1} or product {id2}."
-    if not s1:
+    if not rows1:
         return f"No transactions found for product {id1}. Product {id2} has data."
-    if not s2:
+    if not rows2:
         return f"Product {id1} has data. No transactions found for product {id2}."
 
+    def _breakdown(pid, rows):
+        n = len(rows)
+        quantities = [r.quantity for r in rows]
+        amounts = [r.total_amount for r in rows]
+        prices = [r.price for r in rows]
+        discounts = [r.discount_applied for r in rows]
+
+        total_qty = sum(quantities)
+        total_rev = sum(amounts)
+        sum_prices = sum(prices)
+        avg_price = sum_prices / n
+        sum_disc = sum(discounts)
+        avg_disc = sum_disc / n
+        store_count = len(set(r.store_location for r in rows))
+
+        lines = [
+            f"  Product {pid}: {n} transactions",
+            f"  Total Qty = sum(Quantity) = {total_qty}",
+            f"  Total Revenue = sum(TotalAmount) = {_fmt(total_rev)}",
+            f"  Avg Price = sum(Price) / count = {_fmt(sum_prices)} / {n} = {_fmt(avg_price)}",
+            f"  Avg Discount = sum(Discount) / count = {sum_disc:.2f} / {n} = {avg_disc:.1f}%",
+            f"  Store Locations = count(distinct StoreLocation) = {store_count}",
+        ]
+        return "\n".join(lines)
+
     lines = [
-        f"Comparison: Product {id1} vs Product {id2}\n",
-        f"{'Metric':<25} {'Product ' + id1:<20} {'Product ' + id2:<20}",
-        f"{'-'*65}",
-        f"{'Transactions':<25} {s1['transactions']:<20} {s2['transactions']:<20}",
-        f"{'Total Qty Sold':<25} {s1['total_qty']:<20} {s2['total_qty']:<20}",
-        f"{'Total Revenue':<25} ${s1['total_revenue']:<19.2f} ${s2['total_revenue']:<19.2f}",
-        f"{'Avg Price':<25} ${s1['avg_price']:<19.2f} ${s2['avg_price']:<19.2f}",
-        f"{'Avg Discount %':<25} {s1['avg_discount']:<19.1f}% {s2['avg_discount']:<19.1f}%",
-        f"{'Store Locations':<25} {s1['store_count']:<20} {s2['store_count']:<20}",
+        f"Comparison: Product {id1} vs Product {id2}",
+        f"═══════════════════════════════════════",
+        f"",
+        f"[Calculation Breakdown]",
+        f"",
+        _breakdown(id1, rows1),
+        f"",
+        _breakdown(id2, rows2),
     ]
 
     return "\n".join(lines)

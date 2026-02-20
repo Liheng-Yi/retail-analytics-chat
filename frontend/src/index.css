@@ -157,9 +157,135 @@ body {
 }
 
 .message-bubble p {
-  margin: 0;
+  margin: 0 0 8px 0;
 }
 
+.message-bubble p:last-child {
+  margin-bottom: 0;
+}
+
+/* ═══════════ MARKDOWN CONTENT ═══════════ */
+.markdown-content {
+  line-height: 1.7;
+}
+
+.markdown-content h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 12px 0 8px 0;
+  background: linear-gradient(135deg, #a78bfa, #6c63ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.markdown-content h3:first-child {
+  margin-top: 0;
+}
+
+.markdown-content ul, .markdown-content ol {
+  margin: 6px 0 10px 0;
+  padding-left: 20px;
+}
+
+.markdown-content li {
+  margin-bottom: 4px;
+}
+
+.markdown-content li > ul {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.markdown-content strong {
+  color: #c4b5fd;
+  font-weight: 600;
+}
+
+.markdown-content code {
+  background: rgba(108, 99, 255, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+
+/* ═══════════ SOURCE DATA CITATION ═══════════ */
+.source-section {
+  margin-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+}
+
+.source-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  background: rgba(108, 99, 255, 0.08);
+  border: 1px solid rgba(108, 99, 255, 0.15);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.source-toggle:hover {
+  background: rgba(108, 99, 255, 0.15);
+  border-color: rgba(108, 99, 255, 0.3);
+  color: var(--text-primary);
+}
+
+.source-icon {
+  font-size: 14px;
+}
+
+.intent-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: rgba(108, 99, 255, 0.2);
+  border-radius: 12px;
+  font-size: 11px;
+  color: #a78bfa;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.source-chevron {
+  font-size: 12px;
+  transition: transform 0.2s;
+  margin-left: 4px;
+}
+
+.source-chevron.open {
+  transform: rotate(180deg);
+}
+
+.source-data {
+  margin-top: 8px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }

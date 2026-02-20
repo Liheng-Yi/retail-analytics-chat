@@ -56,7 +56,11 @@ def chat():
         # Step 3: Generate natural language response
         response_text = generate_response(user_message, retrieved_data)
 
-        return jsonify({"response": response_text})
+        return jsonify({
+            "response": response_text,
+            "source_data": retrieved_data,
+            "intent": intent,
+        })
 
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
