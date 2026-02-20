@@ -29,6 +29,7 @@ function App() {
           content: data.response,
           sourceData: data.source_data,
           intent: data.intent,
+          chartData: data.chart_data,
         },
       ]);
     } catch {

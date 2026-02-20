@@ -39,9 +39,10 @@ def get_customer_transactions(customer_id: str, limit: int = 20) -> str:
     return "\n".join(lines)
 
 
-def get_product_info(product_id: str) -> str:
+def get_product_info(product_id: str, rows=None) -> str:
     """Get aggregated info about a product ID with calculation breakdowns."""
-    rows = Transaction.query.filter_by(product_id=product_id).all()
+    if rows is None:
+        rows = Transaction.query.filter_by(product_id=product_id).all()
 
     if not rows:
         return f"No transactions found for product {product_id}."
@@ -109,14 +110,21 @@ def get_product_info(product_id: str) -> str:
 
     lines.append(f"")
     lines.append(f"Payment Methods: {json.dumps(payment_methods)}")
-    lines.append(f"Store Locations: {len(stores)}")
+    lines.append(f"")
+    lines.append(f"Total Stores Selling This Product: {len(stores)}")
+    lines.append(f"Sample store locations:")
+    for s in stores[:15]:
+        lines.append(f"  • {s}")
+    if len(stores) > 15:
+        lines.append(f"  ... and {len(stores) - 15} more")
 
     return "\n".join(lines)
 
 
-def get_business_metrics() -> str:
+def get_business_metrics(rows=None) -> str:
     """Get general business metrics with calculation breakdowns."""
-    rows = Transaction.query.all()
+    if rows is None:
+        rows = Transaction.query.all()
 
     if not rows:
         return "No transaction data available."
@@ -171,16 +179,12 @@ def get_business_metrics() -> str:
     return "\n".join(lines)
 
 
-def compare_customers(id1: str, id2: str) -> str:
+def compare_customers(id1: str, id2: str, rows1=None, rows2=None) -> str:
     """Compare two customers with calculation breakdowns."""
-    def _stats(cid):
-        rows = Transaction.query.filter_by(customer_id=cid).all()
-        if not rows:
-            return None, []
-        return rows, rows
-
-    rows1, _ = _stats(id1)
-    rows2, _ = _stats(id2)
+    if rows1 is None:
+        rows1 = Transaction.query.filter_by(customer_id=id1).all()
+    if rows2 is None:
+        rows2 = Transaction.query.filter_by(customer_id=id2).all()
 
     if not rows1 and not rows2:
         return f"No transactions found for either customer {id1} or customer {id2}."
@@ -240,14 +244,12 @@ def compare_customers(id1: str, id2: str) -> str:
     return "\n".join(lines)
 
 
-def compare_products(id1: str, id2: str) -> str:
+def compare_products(id1: str, id2: str, rows1=None, rows2=None) -> str:
     """Compare two products with calculation breakdowns."""
-    def _load(pid):
-        rows = Transaction.query.filter_by(product_id=pid).all()
-        return rows if rows else None
-
-    rows1 = _load(id1)
-    rows2 = _load(id2)
+    if rows1 is None:
+        rows1 = Transaction.query.filter_by(product_id=id1).all()
+    if rows2 is None:
+        rows2 = Transaction.query.filter_by(product_id=id2).all()
 
     if not rows1 and not rows2:
         return f"No transactions found for either product {id1} or product {id2}."

@@ -18,6 +18,8 @@ The database contains transaction records with these fields:
 When the user asks a question, use the data provided in the [DATA] section to generate a clear, natural language answer.
 If no data is available or the ID doesn't exist, say so clearly.
 Be concise but informative. Use bullet points and numbers when listing data.
+Always mention total counts (e.g. total number of stores, transactions) when they appear in the data.
+When store locations are listed, mention the total count and show some examples.
 """
 
 QUERY_CLASSIFICATION_PROMPT = """Classify this retail analytics question into exactly one intent.

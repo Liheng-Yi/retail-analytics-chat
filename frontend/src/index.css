@@ -286,6 +286,46 @@ body {
   max-height: 300px;
   overflow-y: auto;
 }
+
+/* ═══════════ CHART PANEL ═══════════ */
+.chart-panel {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chart-card {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(108, 99, 255, 0.12);
+  border-radius: 12px;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #a78bfa;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.chart-wrapper {
+  width: 100%;
+  min-height: 220px;
+}
+
+.recharts-text {
+  fill: #a0a0b8 !important;
+}
+
+.recharts-default-tooltip {
+  background: #1a1a2e !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 8px !important;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -343,6 +383,16 @@ body {
 .chat-input input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.chat-input input:-webkit-autofill,
+.chat-input input:-webkit-autofill:hover,
+.chat-input input:-webkit-autofill:focus,
+.chat-input input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-secondary) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  caret-color: var(--text-primary) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .chat-input button {

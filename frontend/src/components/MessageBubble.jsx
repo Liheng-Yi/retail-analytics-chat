@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import ChartPanel from './ChartPanel';
 
 const INTENT_LABELS = {
   customer_query: '👤 Customer Query',
@@ -9,7 +10,7 @@ const INTENT_LABELS = {
   general: '💬 General',
 };
 
-function MessageBubble({ role, content, sourceData, intent }) {
+function MessageBubble({ role, content, sourceData, intent, chartData }) {
   const [showSource, setShowSource] = useState(false);
 
   const hasSource = role === 'assistant' && sourceData && 
@@ -24,6 +25,10 @@ function MessageBubble({ role, content, sourceData, intent }) {
           </div>
         ) : (
           <p>{content}</p>
+        )}
+
+        {chartData && chartData.length > 0 && (
+          <ChartPanel charts={chartData} />
         )}
 
         {hasSource && (

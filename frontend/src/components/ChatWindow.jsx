@@ -17,6 +17,7 @@ function ChatWindow({ messages, loading }) {
           content={msg.content}
           sourceData={msg.sourceData}
           intent={msg.intent}
+          chartData={msg.chartData}
         />
       ))}
       {loading && (

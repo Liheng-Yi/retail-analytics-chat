@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--reload", "app:create_app()"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--reload", "--timeout", "120", "app:create_app()"]

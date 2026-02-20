@@ -11,6 +11,12 @@ from app.services.data_service import (
     compare_customers,
     compare_products,
 )
+from app.services.chart_service import (
+    build_product_charts,
+    build_business_charts,
+    build_comparison_charts,
+)
+from app.models import Transaction
 
 logger = logging.getLogger(__name__)
 
@@ -36,31 +42,49 @@ def chat():
 
         logger.info(f"Intent: {intent}, customer_id: {customer_id}, product_id: {product_id}")
 
-        # Step 2: Retrieve data based on intent
+        # Step 2: Load rows ONCE, use for both text + charts
+        chart_data = None
+
         if intent == "comparison":
             if customer_id and customer_id_2:
-                retrieved_data = compare_customers(customer_id, customer_id_2)
+                r1 = Transaction.query.filter_by(customer_id=customer_id).all()
+                r2 = Transaction.query.filter_by(customer_id=customer_id_2).all()
+                retrieved_data = compare_customers(customer_id, customer_id_2, r1, r2)
+                if r1 and r2:
+                    chart_data = build_comparison_charts("customer", customer_id, customer_id_2, r1, r2)
             elif product_id and product_id_2:
-                retrieved_data = compare_products(product_id, product_id_2)
+                r1 = Transaction.query.filter_by(product_id=product_id).all()
+                r2 = Transaction.query.filter_by(product_id=product_id_2).all()
+                retrieved_data = compare_products(product_id, product_id_2, r1, r2)
+                if r1 and r2:
+                    chart_data = build_comparison_charts("product", product_id, product_id_2, r1, r2)
             else:
-                retrieved_data = "Could not identify two entities to compare. Please specify two customer IDs or two product IDs."
+                retrieved_data = "Could not identify two entities to compare."
         elif intent == "customer_query" and customer_id:
             retrieved_data = get_customer_transactions(customer_id)
         elif intent == "product_query" and product_id:
-            retrieved_data = get_product_info(product_id)
+            rows = Transaction.query.filter_by(product_id=product_id).all()
+            retrieved_data = get_product_info(product_id, rows)
+            chart_data = build_product_charts(product_id, rows)
         elif intent == "business_metric":
-            retrieved_data = get_business_metrics()
+            rows = Transaction.query.all()
+            retrieved_data = get_business_metrics(rows)
+            chart_data = build_business_charts(rows)
         else:
             retrieved_data = "No specific data retrieval needed for this query."
 
         # Step 3: Generate natural language response
         response_text = generate_response(user_message, retrieved_data)
 
-        return jsonify({
+        result = {
             "response": response_text,
             "source_data": retrieved_data,
             "intent": intent,
-        })
+        }
+        if chart_data:
+            result["chart_data"] = chart_data
+
+        return jsonify(result)
 
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
