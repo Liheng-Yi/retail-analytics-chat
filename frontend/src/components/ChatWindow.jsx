@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import MessageBubble from './MessageBubble';
 
-function ChatWindow({ messages, loading }) {
+function ChatWindow({ messages, loading, onSuggestionClick }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -18,6 +18,8 @@ function ChatWindow({ messages, loading }) {
           sourceData={msg.sourceData}
           intent={msg.intent}
           chartData={msg.chartData}
+          suggestions={msg.suggestions}
+          onSuggestionClick={onSuggestionClick}
         />
       ))}
       {loading && (

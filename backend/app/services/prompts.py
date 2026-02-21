@@ -25,7 +25,7 @@ When store locations are listed, mention the total count and show some examples.
 QUERY_CLASSIFICATION_PROMPT = """Classify this retail analytics question into exactly one intent.
 
 You MUST return a JSON object with these exact keys:
-- "intent": MUST be exactly one of: "customer_query", "product_query", "business_metric", "comparison", "general"
+- "intent": MUST be exactly one of: "customer_query", "product_query", "business_metric", "comparison", "off_topic", "general"
 - "customer_id": the first numeric customer ID if mentioned (as a string), or null
 - "customer_id_2": the second numeric customer ID if comparing two customers (as a string), or null
 - "product_id": the first single-letter product ID (A/B/C/D) if mentioned, or null
@@ -33,6 +33,7 @@ You MUST return a JSON object with these exact keys:
 - "summary": a brief description of what the user wants
 
 Rules:
+- If the question is NOT about retail, transactions, customers, products, or business data → "off_topic"
 - If the question compares two customers or two products → "comparison"
 - If the question mentions a specific customer or customer ID → "customer_query"
 - If the question mentions a specific product or product ID → "product_query"

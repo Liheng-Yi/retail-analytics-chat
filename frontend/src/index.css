@@ -287,6 +287,33 @@ body {
   overflow-y: auto;
 }
 
+/* ═══════════ SUGGESTION CHIPS ═══════════ */
+.suggestion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.suggestion-chip {
+  padding: 8px 16px;
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  border-radius: 20px;
+  background: rgba(108, 99, 255, 0.08);
+  color: #c4b5fd;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.suggestion-chip:hover {
+  background: rgba(108, 99, 255, 0.2);
+  border-color: rgba(108, 99, 255, 0.5);
+  color: #e8e8f0;
+  box-shadow: 0 0 12px rgba(108, 99, 255, 0.15);
+}
+
 /* ═══════════ CHART PANEL ═══════════ */
 .chart-panel {
   margin-top: 12px;

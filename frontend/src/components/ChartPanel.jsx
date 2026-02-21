@@ -32,6 +32,7 @@ function SimpleBar({ chart }) {
         <XAxis dataKey="name" tick={{ fill: '#a0a0b8', fontSize: 12 }} />
         <YAxis tick={{ fill: '#a0a0b8', fontSize: 11 }} tickFormatter={formatNum} />
         <Tooltip
+          cursor={false}
           contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#e8e8f0' }}
           formatter={formatTooltip}
         />
@@ -49,6 +50,7 @@ function GroupedBar({ chart }) {
         <XAxis dataKey="name" tick={{ fill: '#a0a0b8', fontSize: 12 }} />
         <YAxis tick={{ fill: '#a0a0b8', fontSize: 11 }} tickFormatter={formatNum} />
         <Tooltip
+          cursor={false}
           contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#e8e8f0' }}
           formatter={formatTooltip}
         />
@@ -79,10 +81,6 @@ function SimplePie({ chart }) {
             <Cell key={i} fill={COLORS[i % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip
-          contentStyle={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#e8e8f0' }}
-          formatter={formatTooltip}
-        />
       </PieChart>
     </ResponsiveContainer>
   );

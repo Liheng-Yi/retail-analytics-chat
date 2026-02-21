@@ -10,7 +10,7 @@ const INTENT_LABELS = {
   general: '💬 General',
 };
 
-function MessageBubble({ role, content, sourceData, intent, chartData }) {
+function MessageBubble({ role, content, sourceData, intent, chartData, suggestions, onSuggestionClick }) {
   const [showSource, setShowSource] = useState(false);
 
   const hasSource = role === 'assistant' && sourceData && 
@@ -25,6 +25,16 @@ function MessageBubble({ role, content, sourceData, intent, chartData }) {
           </div>
         ) : (
           <p>{content}</p>
+        )}
+
+        {suggestions && suggestions.length > 0 && (
+          <div className="suggestion-chips">
+            {suggestions.map((s, i) => (
+              <button key={i} className="suggestion-chip" onClick={() => onSuggestionClick(s)}>
+                {s}
+              </button>
+            ))}
+          </div>
         )}
 
         {chartData && chartData.length > 0 && (

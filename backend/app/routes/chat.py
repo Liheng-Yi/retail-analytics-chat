@@ -31,6 +31,10 @@ def chat():
     if not user_message:
         return jsonify({"response": "Please enter a question about retail data."})
 
+    MAX_MESSAGE_LENGTH = 500
+    if len(user_message) > MAX_MESSAGE_LENGTH:
+        return jsonify({"response": f"Please keep your question under {MAX_MESSAGE_LENGTH} characters."})
+
     try:
         # Step 1: Classify intent and extract entities
         classification = classify_query(user_message)
@@ -40,7 +44,24 @@ def chat():
         product_id = classification.get("product_id")
         product_id_2 = classification.get("product_id_2")
 
+        # Normalize customer IDs to uppercase for case-insensitive matching
+        if customer_id:
+            customer_id = customer_id.upper()
+        if customer_id_2:
+            customer_id_2 = customer_id_2.upper()
+        if product_id:
+            product_id = product_id.upper()
+        if product_id_2:
+            product_id_2 = product_id_2.upper()
+
         logger.info(f"Intent: {intent}, customer_id: {customer_id}, product_id: {product_id}")
+
+        # Handle off-topic questions
+        if intent == "off_topic":
+            return jsonify({
+                "response": "I'm a retail analytics assistant — I can only help with questions about customers, products, and business metrics from the transaction dataset. Try asking something like *\"What has customer 109318 purchased?\"*",
+                "intent": "off_topic",
+            })
 
         # Step 2: Load rows ONCE, use for both text + charts
         chart_data = None

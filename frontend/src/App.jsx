@@ -5,16 +5,24 @@ import ChatInput from './components/ChatInput';
 import { sendMessage } from './services/api';
 
 function App() {
+  const SUGGESTIONS = [
+    'What has customer 109318 purchased?',
+    'Which stores sell product A?',
+    'What is the total revenue by category?',
+    'Compare product A vs product B',
+  ];
+
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Hello! I can help you analyze retail transaction data. Try asking about a customer or product — for example:\n\n• "What has customer 109318 purchased?"\n• "Which stores sell product A?"\n• "What is the total revenue by category?"',
+      content: 'Hello! I can help you analyze retail transaction data. Try one of these:',
+      suggestions: SUGGESTIONS,
     },
   ]);
   const [loading, setLoading] = useState(false);
 
   const handleSend = async (text) => {
-    if (!text.trim()) return;
+    if (!text.trim() || loading) return;
 
     const userMsg = { role: 'user', content: text };
     setMessages((prev) => [...prev, userMsg]);
@@ -54,7 +62,7 @@ function App() {
         </div>
       </header>
       <main className="chat-container">
-        <ChatWindow messages={messages} loading={loading} />
+        <ChatWindow messages={messages} loading={loading} onSuggestionClick={handleSend} />
         <ChatInput onSend={handleSend} disabled={loading} />
       </main>
     </div>

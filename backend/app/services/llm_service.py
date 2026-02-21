@@ -33,7 +33,7 @@ def classify_query(question: str) -> dict:
     """
     client = get_openai_client()
 
-    VALID_INTENTS = {"customer_query", "product_query", "business_metric", "comparison", "general"}
+    VALID_INTENTS = {"customer_query", "product_query", "business_metric", "comparison", "off_topic", "general"}
 
     for attempt in range(MAX_RETRIES):
         try:
