@@ -55,7 +55,6 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <div className="logo">
-            <span className="logo-icon">📊</span>
             <h1>Retail Analytics Chat</h1>
           </div>
           <p className="subtitle">AI-powered insights from your transaction data</p>

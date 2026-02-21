@@ -30,6 +30,7 @@ You MUST return a JSON object with these exact keys:
 - "customer_id_2": the second numeric customer ID if comparing two customers (as a string), or null
 - "product_id": the first single-letter product ID (A/B/C/D) if mentioned, or null
 - "product_id_2": the second single-letter product ID if comparing two products, or null
+- "metric_type": only when intent is "business_metric", set to "revenue" if the question is about revenue, spending, sales amounts, or category/payment breakdowns; set to "count" if the question is about counts or totals of customers, products, or transactions; otherwise null
 - "summary": a brief description of what the user wants
 
 Rules:

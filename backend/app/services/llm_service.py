@@ -95,7 +95,7 @@ def classify_query(question: str) -> dict:
 
 def generate_response(question: str, data: str) -> str:
     """
-    Use GPT-4o-mini to generate a natural language response using retrieved data.
+    Use GPT-4o to generate a natural language response using retrieved data.
 
     Args:
         question: The user's original question
@@ -109,7 +109,7 @@ def generate_response(question: str, data: str) -> str:
     for attempt in range(MAX_RETRIES):
         try:
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "system",

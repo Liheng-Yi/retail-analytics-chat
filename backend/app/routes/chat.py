@@ -90,7 +90,9 @@ def chat():
         elif intent == "business_metric":
             rows = Transaction.query.all()
             retrieved_data = get_business_metrics(rows)
-            chart_data = build_business_charts(rows)
+            metric_type = classification.get("metric_type", "revenue")
+            if metric_type == "revenue":
+                chart_data = build_business_charts(rows)
         else:
             retrieved_data = "No specific data retrieval needed for this query."
 
